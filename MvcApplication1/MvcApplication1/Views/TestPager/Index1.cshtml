@@ -1,0 +1,38 @@
+﻿@using MvcApplication1.Models;
+@using Webdiyer.WebControls.Mvc;
+@{
+    //ViewBag.Title = "Index";
+    Layout = null;
+}
+@model Webdiyer.WebControls.Mvc.PagedList<Article>
+<!DOCTYPE html>
+<html lang="zh">
+<body>
+    <h2>Index</h2>
+
+    @using (Ajax.BeginForm("/Index", new RouteValueDictionary { { "id", "" } }, new AjaxOptions { UpdateTargetId = "articles", HttpMethod = "Get", InsertionMode = InsertionMode.Replace }, new RouteValueDictionary { { "id", "searchForm" }, { "class", "form-inline well" } }))
+    { 
+        <span>标题：</span>
+
+        <input type="text" name="title" id="title" style="width: 100px" class="form-control" />
+
+        <span>作者：</span>
+
+        <input type="text" name="author" placeholder="如：Webdiyer" data-toggle="tooltip" title="如：Webdiyer" id="author" style="width: 120px" class="form-control" />
+        
+         <input type="submit" value="搜索(S)" accesskey="S" class="btn btn-default" />
+    }
+    <div id="articles">
+        @Html.Partial("ArticleListPartial", Model)
+    </div>
+@section Scripts
+{
+     @{Html.RegisterMvcPagerScriptResource();}
+     <script type="text/javascript" src="/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+      
+ }
+
+</body>
+
+
+</html>

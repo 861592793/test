@@ -1,0 +1,22 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>TestTemp</title>
+</head>
+<body>
+    <div>
+        @using (Html.BeginForm("Search", ViewContext.RouteData.GetRequiredString("Controller"), new RouteValueDictionary { { "id", "" } },
+            FormMethod.Post, new {aa="" }))
+        {
+
+        }
+        , new { id = "form" }
+    </div>
+</body>
+</html>

@@ -1,0 +1,339 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+    <script src="http://apps.bdimg.com/libs/jquery/2.0.0/jquery.min.js"></script>
+</head>
+<body>
+    <!--<table>
+        <tr>
+            <td>
+                attrKey
+            </td>             
+            <td>
+                <input type="text" id="attrKey" name="attrKey" />             
+            </td>
+        </tr> 
+        <tr>
+            <td>
+               attrName
+            </td>             
+            <td>
+                <input type="text" id="attrName" name="attrName" />
+             
+            </td>
+        </tr>
+         
+        <tr>
+            <td>
+                attrPlaceholder
+            </td>             
+            <td>
+                <input type="text" id="attrPlaceholder" name="attrPlaceholder" />             
+            </td>
+        </tr> 
+        <tr>
+            <td>
+                attrType
+            </td>             
+            <td>
+                <select id="attrType" name="attrType">
+                    <option value="text">文本</option>
+                     <option value="select">下拉选择</option>
+                </select>
+             
+            </td>
+        </tr> 
+        <tr>
+            <td>
+                attrValue
+            </td>             
+            <td>
+                <input id="attrValue" name="attrValue" type="text" placeholder="选项间英文分号分隔" />
+             
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <input type="button" value="" />
+            </td>
+        </tr>
+    </table>-->
+    <table id="template" style="display:none">
+        <tr>
+            <td attrName>
+
+            </td>
+            <td attrkey attrType>
+           
+            </td>
+        </tr>
+    </table>
+   
+
+    <table id="container">
+
+    </table>
+    <div>
+        <input id="addData" type="button"  value="增加" onclick="addData()"  />
+    </div>
+    <!--展示-->
+    <br />
+     <br />
+    展示
+    <div id="dataList">
+
+    </div>
+
+     <!--筛选-->
+    <br />
+     <br />
+    筛选
+     <div id="template2">
+       <table id="filterTable">
+           <tr>
+               <td>
+                   <input id="txt_number" type="text" placeholder="请输入number" />
+               </td>
+               <td>
+                   <input id="txt_key" type="text" placeholder="请输入字段对应的key" onblur="filterData()" />
+               </td>
+           </tr>
+       </table>
+
+    </div>
+
+
+    
+</body>
+</html>
+<script type="text/javascript">
+    var templateResult;
+    $(
+        function () {
+
+            $.ajax({
+                type: "post",
+                url: "/TestData/GetTemplateData",
+                data: JSON.stringify({
+                   number:"0001"
+
+                }
+                ),
+                contentType: 'application/json',
+                async: false,
+                success: function (result) {
+                    templateResult = result;
+                    createPage(result, "#container");
+                }
+
+            });
+
+            $.ajax({
+                type: "post",
+                url: "/TestData/getAllData",
+                data: JSON.stringify({                  
+                }
+                ),
+                contentType: 'application/json',
+                async: true,
+                success: function (result) {
+                    showDataList(result);
+                }
+
+            });
+        }
+     );
+
+    function createPage(result,selector) {
+        if (result && result.IsSuccess) {
+            var attrStr = result.Data.attrsJson;
+            var pos = attrStr.indexOf(":");
+            var arrStr = attrStr.substr(pos+1);
+            var attrJson = JSON.parse(arrStr);
+
+            var container = $(selector);
+            var template = $("#template:first-child").children().eq(0).html();
+            for (var i = 0; i < attrJson.length; i++) {
+                container.append(template);
+                var currentTr = container.find("tr:last");              
+                $("td[attrName]", currentTr).text(attrJson[i].attrName);
+                var attrType = attrJson[i].attrType;
+
+                $("td[attrkey]", currentTr).attr("attrkey", attrJson[i].attrkey);
+                $("td[attrkey]", currentTr).attr("attrType", attrJson[i].attrType);
+                if (attrType == "text")
+                {
+                    $("td[attrkey]", currentTr).append('<input type="text" value="" placeholder="' + attrJson[i].attrPlaceholder + '" />');
+                    //$("td[attrkey]", currentTr).attr("placeholder", attrJson[i].attrPlaceholder);
+                }
+                else if (attrType == "select") {
+                    if (attrJson[i].options) {
+                        var optionStr = "";
+                        for (var j = 0; j < attrJson[i].options.length; j++) {
+                            var optionValue = attrJson[i].options[j].value;
+                            var optionText = attrJson[i].options[j].text;
+                            optionStr += '<option value="' + optionValue + '">' + optionText + '</option>\r\n';
+                            
+                        }
+
+                        $("td[attrkey]", currentTr).append("<select>"+optionStr+"</select>");
+                    }
+                    else {
+                        $("td[attrkey]", currentTr).append("缺少选项数据");
+                    }
+                }
+                else {
+                    $("td[attrkey]", currentTr).append("暂不支持该类型");
+
+                }
+
+            }
+
+
+        }
+        console.log(result);
+    }
+
+    function addData() {
+        var rows = $("#container").find("tr");
+        var arrKey=[];
+        for (var i = 0; i < rows.length; i++)
+        {
+            var key = $("td[attrkey]", rows[i]).attr("attrkey");
+            var value = $("td[attrkey] :text,select option:selected", rows[i]).val();
+            var attrType = $("td[attrkey]", rows[i]).attr("attrType");
+            var obj = {
+                attrkey: key,
+                attrType: attrType,
+                attrValue: value
+            };
+            arrKey.push(obj);
+        }
+        $.ajax({
+            type: "post",
+            url: "/TestData/addData",
+            data: JSON.stringify({
+                number: "0001",
+                jsonData: JSON.stringify(arrKey)
+            }
+            ),
+            contentType: 'application/json',
+            async: true,
+            success: function (result) {
+                alert("111");
+            }
+
+        });
+    }
+
+    function showDataList(result) {
+        if (result && result.IsSuccess) {
+            var lstData = result.Data;
+            for (var i = 0; i < lstData.length; i++) {
+                $("#dataList").append("<br />");
+                $("#dataList").append("<table id='" + lstData[i].id + "'></table>");
+                createPage(templateResult, "#" + lstData[i].id);
+                var jsonDataStr = lstData[i].jsonData;
+                var jsonData = JSON.parse(jsonDataStr);
+
+                var currentTable = $("#dataList table:last");
+                var rows = $("tr", currentTable);
+                for (var j = 0; j < rows.length;j++){
+                    var attrkey = $("td[attrkey]", rows[j]).attr("attrkey");
+
+                    for (var k = 0; k < jsonData.length; k++) {
+
+                        var attrType = jsonData[k].attrType;
+                        if (jsonData[k].attrkey == attrkey) {
+
+                            if (attrType == "text") {
+                                $("td[attrkey] :text", rows[j]).val(jsonData[k].attrValue);
+                            }
+                            else if (attrType == "select") {
+                                $("td[attrkey] select", rows[j]).val(jsonData[k].attrValue);
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+
+    }
+
+    function filterData() {
+        var number = $("#txt_number").val();
+        var key = $("#txt_key").val();
+
+        $.ajax({
+            type: "post",
+            url: "/TestData/getData",
+            data: JSON.stringify({
+                number: number,
+                attrKey: key
+
+            }
+            ),
+            contentType: 'application/json',
+            async: false,
+            success: function (result) {
+              
+                if (result && result.IsSuccess) {
+                    var lstData = result.Data;
+                    if (lstData && lstData.length > 0) {
+                        var jsonData = JSON.parse(lstData[0].jsonData);
+                       
+                        var attrStr = templateResult.Data.attrsJson;
+                        var pos = attrStr.indexOf(":");
+                        var arrStr = attrStr.substr(pos+1);
+                        var attrJson = JSON.parse(arrStr);
+
+                        var attrType = "";
+                        var value = "";
+                        for (var i = 0; i < attrJson.length; i++) {
+                            if (attrJson[i].attrkey == key)
+                            {
+                               
+                                var control = "";
+                                for (var j = 0; j < jsonData.length; j++) {
+
+                                    if (jsonData[j].attrkey == key) {
+                                        attrType = attrJson[i].attrType;
+                                        value = jsonData[j].attrValue;
+                                        if (attrJson[i].attrType == "text") {
+                                            control = "<input type='text' value = '" + value + "' />";
+                                        }
+                                        else if (attrJson[i].attrType == "select") {
+                                            var optionStr = "";
+                                            for (var j = 0; j < attrJson[i].options.length; j++) {
+                                                var optionValue = attrJson[i].options[j].value;
+                                                var optionText = attrJson[i].options[j].text;
+                                                optionStr += '<option value="' + optionValue + '">' + optionText + '</option>\r\n';
+                            
+                                            }
+                                           
+                                            control = "<select>" + optionStr + "</select>";
+
+                                        }
+                                    }
+                                }
+                                var str = '<tr><td>' + attrJson[i].attrName + '</td><td>' + control + '</td></tr>';
+
+                                $("#filterTable").append(str);
+                                if (attrType == "select")
+                                {
+                                    $("#filterTable select").val(value);
+                                }
+                            }
+                        }
+                        //filterTable
+                    }
+                }
+            }
+
+        });
+
+    }
+</script>

@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+</head>
+<script src="../Scripts/jquery-3.0.0.min.js"></script>
+<!-- <script src="~/Scripts/bootstrap.min.js"></script>
+ <link href="~/Content/bootstrap.min.css" rel="stylesheet" />-->
+<link href="../Scripts/select2/select2.css" rel="stylesheet" />
+<script src="../Scripts/select2/select2.js"></script>
+
+<style type="text/css">
+    .allselect {
+        display:none;
+    }
+
+</style>
+
+<body>
+    <div>
+        <input type="button" value="增加" onclick="testAdd()" />
+        <div class="select2bag">
+             <select  class="form-control allselect select2 testselect2"> 
+                <option value="1">qqqq</option> 
+                 <option value="2">aaaaa</option>
+                 <option value="3">sssss</option>
+                <option value="4">dddddd</option>
+            </select>
+        </div>
+        <div id="select2Container">
+
+
+        </div>
+    </div>
+</body>
+</html>
+<script type="text/javascript">
+    $(
+        function () {
+            $(".testselect2").select2();
+            $.fn.modal.Constructor.prototype.enforceFocus = function () { }
+        }
+     );
+
+    function testAdd() {
+        var select2Bag = $(".select2bag");
+
+        //$(".select2bag").find(".allselect").addClass('allselect' + length);
+        $(".select2bag").find(".allselect").removeClass('select2-hidden-accessible');
+        $(".select2bag").find(".select2-container").remove();
+        $(".select2bag").find(".allselect").removeAttr("data-select2-id");
+        $(".select2bag").find(".allselect").removeAttr("tabindex");
+        $(".select2bag").find(".allselect").removeAttr("aria-hidden");
+        $(".select2bag").find("option").removeAttr('data-select2-id');
+
+
+        $("#select2Container").append("<div>" + select2Bag.html() + "</div>");
+
+        $(".testselect2").select2();
+
+    }
+
+</script>
